@@ -53,6 +53,21 @@ CODEX_BIN=/path/to/codex codex_limit_patch --mode expanded
 codex_limit_patch --codex-bin "C:\Path\To\codex.exe" --mode expanded
 ```
 
+如果想把配额信息作为常驻贴片显示，可以启动 overlay：
+
+```bash
+codex_limit_patch_overlay --mode pill
+codex_limit_patch_overlay --mode expanded --refresh-sec 60
+```
+
+overlay 会复用同一套本地 Codex app-server 数据读取、解析和文本渲染逻辑。macOS 上它会尝试贴近 Codex 窗口右上角；如果系统没有授予辅助功能权限，或找不到 Codex 窗口，则退回到屏幕右上角。也可以手动指定位置：
+
+```bash
+codex_limit_patch_overlay --geometry "+1200+20" --no-track-codex
+```
+
+overlay 支持拖动移动、双击立即刷新，按 `Esc` 或 `Ctrl-Q` 关闭。
+
 `pill` 模式是紧凑型的输出：
 
 ```text

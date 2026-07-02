@@ -53,6 +53,21 @@ CODEX_BIN=/path/to/codex codex_limit_patch --mode expanded
 codex_limit_patch --codex-bin "C:\Path\To\codex.exe" --mode expanded
 ```
 
+To keep the limit state visible as a small always-on-top patch, run the overlay:
+
+```bash
+codex_limit_patch_overlay --mode pill
+codex_limit_patch_overlay --mode expanded --refresh-sec 60
+```
+
+The overlay reuses the same local Codex app-server data reader, parser, and text rendering logic. On macOS, it tries to attach near the top-right of the Codex window. If Accessibility permission is not available, or if the Codex window cannot be found, it falls back to the screen top-right. You can also pin it manually:
+
+```bash
+codex_limit_patch_overlay --geometry "+1200+20" --no-track-codex
+```
+
+Drag the overlay to move it, double-click to refresh immediately, and press `Esc` or `Ctrl-Q` to close it.
+
 The pill mode is compact:
 
 ```text

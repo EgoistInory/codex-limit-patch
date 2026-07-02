@@ -1,0 +1,3 @@
+[console_scripts]
+codex_limit_patch = codex_limit_patch.cli:main
+codex_limit_patch_overlay = codex_limit_patch.overlay:main
