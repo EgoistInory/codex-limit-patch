@@ -1,5 +1,7 @@
 # Codex Limit Patch
 
+[English](README.md) | [中文](README_zh.md)
+
 Cross-platform local viewer for Codex usage limits and Reset Bank state.
 
 By default, it reads the local Codex app-server protocol:
