@@ -1,0 +1,37 @@
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
+
+
+def load_pyproject() -> dict:
+    pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    return tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
+
+
+class CliEntrypointTests(unittest.TestCase):
+    def test_package_installs_codex_limit_patch_command(self) -> None:
+        data = load_pyproject()
+
+        self.assertEqual(
+            data["project"]["scripts"]["codex_limit_patch"],
+            "codex_limit_patch.cli:main",
+        )
+
+    def test_package_discovery_only_includes_runtime_package(self) -> None:
+        data = load_pyproject()
+
+        self.assertEqual(
+            data["tool"]["setuptools"]["packages"]["find"]["include"],
+            ["codex_limit_patch*"],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

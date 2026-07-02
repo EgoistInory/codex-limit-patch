@@ -32,19 +32,25 @@ pip install -e .
 
 ## Usage
 
-If installed via `pip`, you can run it from anywhere. Alternatively, from this project directory without installation:
+If installed via `pip`, you can use the CLI command directly from anywhere:
+
+```bash
+codex_limit_patch --mode pill
+codex_limit_patch --mode expanded
+codex_limit_patch --mode json
+```
+
+Alternatively, from this project directory without installation (running the module):
 
 ```bash
 python -m codex_limit_patch --mode pill
-python -m codex_limit_patch --mode expanded
-python -m codex_limit_patch --mode json
 ```
 
 If `codex` is not on `PATH`, set `CODEX_BIN` or pass `--codex-bin`:
 
 ```bash
-CODEX_BIN=/path/to/codex python -m codex_limit_patch --mode expanded
-python -m codex_limit_patch --codex-bin "C:\Path\To\codex.exe" --mode expanded
+CODEX_BIN=/path/to/codex codex_limit_patch --mode expanded
+codex_limit_patch --codex-bin "C:\Path\To\codex.exe" --mode expanded
 ```
 
 The pill mode is compact:
@@ -239,7 +245,7 @@ See `settings.example.json`:
 Pass a settings file with:
 
 ```bash
-python -m codex_limit_patch --settings settings.example.json
+codex_limit_patch --settings settings.example.json
 ```
 
 ## Debug Logging
@@ -247,7 +253,7 @@ python -m codex_limit_patch --settings settings.example.json
 Use `--debug-log` to record reset bank response shape diagnostics:
 
 ```bash
-python -m codex_limit_patch --debug-log ./logs/reset-bank.log
+codex_limit_patch --debug-log ./logs/reset-bank.log
 ```
 
 The debug log records structural shape, whether reset bank exists, whether only `availableCount` is present, and whether detail counts differ from the backend snapshot.

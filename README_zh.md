@@ -32,19 +32,25 @@ pip install -e .
 
 ## 使用方法
 
-如果通过 `pip` 安装，你可以在任何地方运行。或者，不安装而直接在该项目目录下运行：
+如果通过 `pip` 安装，你可以在任何地方直接使用命令行工具：
+
+```bash
+codex_limit_patch --mode pill
+codex_limit_patch --mode expanded
+codex_limit_patch --mode json
+```
+
+或者，不安装而直接在该项目目录下作为源码模块运行：
 
 ```bash
 python -m codex_limit_patch --mode pill
-python -m codex_limit_patch --mode expanded
-python -m codex_limit_patch --mode json
 ```
 
 如果 `codex` 不在 `PATH` 中，请设置环境变量 `CODEX_BIN` 或传递 `--codex-bin` 参数：
 
 ```bash
-CODEX_BIN=/path/to/codex python -m codex_limit_patch --mode expanded
-python -m codex_limit_patch --codex-bin "C:\Path\To\codex.exe" --mode expanded
+CODEX_BIN=/path/to/codex codex_limit_patch --mode expanded
+codex_limit_patch --codex-bin "C:\Path\To\codex.exe" --mode expanded
 ```
 
 `pill` 模式是紧凑型的输出：
@@ -239,7 +245,7 @@ GET https://chatgpt.com/backend-api/wham/rate-limit-reset-credits
 通过以下命令传入配置文件：
 
 ```bash
-python -m codex_limit_patch --settings settings.example.json
+codex_limit_patch --settings settings.example.json
 ```
 
 ## Debug 日志
@@ -247,7 +253,7 @@ python -m codex_limit_patch --settings settings.example.json
 使用 `--debug-log` 来记录重置库响应结构的诊断信息：
 
 ```bash
-python -m codex_limit_patch --debug-log ./logs/reset-bank.log
+codex_limit_patch --debug-log ./logs/reset-bank.log
 ```
 
 Debug 日志会记录结构化特征，比如：重置库是否存在、是否仅存在 `availableCount`，以及详情条目数是否与后端的快照总数不一致。
