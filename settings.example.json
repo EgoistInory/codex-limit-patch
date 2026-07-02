@@ -1,0 +1,11 @@
+{
+  "resetBank": {
+    "showInPill": true,
+    "showDetailsInExpanded": true,
+    "warnExpireWithinHours": 72,
+    "dangerExpireWithinHours": 24,
+    "showUnknownDetails": true,
+    "enablePrivateEndpoint": false,
+    "privateEndpointWarningAccepted": false
+  }
+}
