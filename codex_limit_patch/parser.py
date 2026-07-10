@@ -104,6 +104,8 @@ class ResetBankState:
 class CodexLimitState:
     available: bool = False
     stale: bool = False
+    dataSource: str = "app_server"
+    sourceLabel: str | None = None
     planName: str | None = None
     fiveHour: LimitWindow | None = None
     weekly: LimitWindow | None = None
@@ -161,6 +163,16 @@ def build_codex_limit_state(
         )
 
     body = response.get("result", response)
+    metadata = response.get("_codexLimitPatch")
+    if not isinstance(metadata, dict):
+        metadata = {}
+    data_source = _string_or_none(metadata.get("source")) or "app_server"
+    source_label = _string_or_none(metadata.get("sourceLabel"))
+    is_stale = bool(metadata.get("stale"))
+    last_updated_at = normalize_timestamp(metadata.get("snapshotAt")) or _datetime_to_iso(
+        snapshot
+    )
+    warning = _string_or_none(metadata.get("warning"))
     rate_limits = body.get("rateLimits") if isinstance(body, dict) else None
     if not isinstance(rate_limits, dict):
         rate_limits = {}
@@ -169,7 +181,13 @@ def build_codex_limit_state(
         reset_raw,
         snapshot_at=snapshot,
         now=current,
-        details_message="Details: not provided by supported Codex app-server",
+        data_source=data_source,
+        source_label=source_label,
+        details_message=(
+            "Details: not provided by local rollout cache"
+            if is_stale
+            else "Details: not provided by supported Codex app-server"
+        ),
         debug=debug,
     )
     plan_name = _string_or_none(rate_limits.get("planType")) or _string_or_none(
@@ -182,13 +200,16 @@ def build_codex_limit_state(
 
     return CodexLimitState(
         available=available,
-        stale=False,
+        stale=is_stale,
+        dataSource=data_source,
+        sourceLabel=source_label,
         planName=plan_name,
         fiveHour=five_hour,
         weekly=weekly,
         resetCredits=reset_bank.availableCount if reset_bank else None,
         resetBank=reset_bank,
-        lastUpdatedAt=_datetime_to_iso(snapshot),
+        lastUpdatedAt=last_updated_at,
+        errorMessage=warning,
     )
 
 

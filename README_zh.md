@@ -123,6 +123,8 @@ account/rateLimits/read
 
 如果 app-server 只返回了 `availableCount`，UI 将只显示 `Reset xN`，不会凭空捏造具体的积分明细。
 
+如果实时 `account/rateLimits/read` 调用失败，工具会只读扫描 `~/.codex/sessions/` 和 `~/.codex/archived_sessions/` 中最近的 rollout `rate_limits` 快照。降级结果会显示 `cached`、数据来源、快照时间和实时错误；它不会读取 `auth.json`。本地快照可能陈旧，仅作为临时参考。
+
 ### 级别 2：本地安全探测
 
 如果 app-server 没有提供单次积分明细，该工具会执行一次本地的只读探测，并且不会读取 `auth.json` 里的 tokens。

@@ -10,8 +10,12 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-from .client import CodexAppServerClient
-from .cli import _augment_reset_bank, _debug_writer, _load_settings
+from .cli import (
+    _augment_reset_bank,
+    _debug_writer,
+    _load_settings,
+    _read_rate_limits,
+)
 from .display import render_expanded, render_pill
 from .parser import build_codex_limit_state
 
@@ -179,7 +183,7 @@ def _read_overlay_text(
     debug,
 ) -> str:
     snapshot = datetime.now(timezone.utc)
-    response = CodexAppServerClient(codex_bin).read_rate_limits()
+    response = _read_rate_limits(codex_bin, debug=debug)
     state = build_codex_limit_state(response, snapshot_at=snapshot, debug=debug)
     _augment_reset_bank(state, settings=settings, snapshot=snapshot, debug=debug)
     if mode == "pill":

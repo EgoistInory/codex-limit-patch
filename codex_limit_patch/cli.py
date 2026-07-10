@@ -6,9 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .client import CodexAppServerClient
+from .client import CodexAppServerClient, CodexAppServerError
 from .display import render_expanded, render_pill
-from .local_probe import probe_local_safe_sources
+from .local_probe import probe_local_rate_limits, probe_local_safe_sources
 from .parser import build_codex_limit_state, to_plain
 from .private_endpoint import PrivateEndpointError, fetch_private_endpoint_reset_bank
 
@@ -48,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
         with Path(args.input_json).open("r", encoding="utf-8-sig") as handle:
             response: dict[str, Any] = json.load(handle)
     else:
-        response = CodexAppServerClient(args.codex_bin).read_rate_limits()
+        response = _read_rate_limits(args.codex_bin, debug=debug)
 
     state = build_codex_limit_state(response, snapshot_at=snapshot, debug=debug)
     _augment_reset_bank(state, settings=settings, snapshot=snapshot, debug=debug)
@@ -59,6 +59,27 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(render_expanded(state, settings=settings))
     return 0
+
+
+def _read_rate_limits(codex_bin: str | None, *, debug) -> dict[str, Any]:
+    try:
+        return CodexAppServerClient(codex_bin).read_rate_limits()
+    except (CodexAppServerError, OSError) as exc:
+        fallback = probe_local_rate_limits(debug=debug)
+        if fallback is None:
+            raise
+        if isinstance(exc, OSError):
+            detail = f"unable to start Codex binary (errno {exc.errno})"
+        else:
+            detail = str(exc).splitlines()[0].strip() or exc.__class__.__name__
+            if len(detail) > 200:
+                detail = detail[:197] + "..."
+        warning = f"Live rate limits unavailable: {detail}"
+        metadata = fallback.setdefault("_codexLimitPatch", {})
+        metadata["warning"] = warning
+        if debug:
+            debug(f"using local rollout rate limit fallback: {detail}")
+        return fallback
 
 
 def _augment_reset_bank(

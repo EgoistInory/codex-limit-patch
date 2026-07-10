@@ -14,6 +14,8 @@ def render_pill(state: CodexLimitState, settings: dict[str, Any] | None = None) 
     text = f"Codex 5h {five} | Week {weekly} | {reset}"
     if soon:
         text += f" | {soon}"
+    if state.stale:
+        text += " | cached"
     return text
 
 
@@ -24,9 +26,18 @@ def render_expanded(state: CodexLimitState, settings: dict[str, Any] | None = No
         f"Codex 5h resets at: {_reset_at_text(state.fiveHour.resetsAt if state.fiveHour else None)}",
         f"Weekly remaining: {_remaining_percent_text(state.weekly.usedPercent if state.weekly else None)}",
         f"Weekly resets at: {_reset_at_text(state.weekly.resetsAt if state.weekly else None)}",
-        "",
-        "Reset Bank",
     ]
+    if state.stale:
+        lines.extend(
+            [
+                "",
+                f"Source: {state.sourceLabel or state.dataSource}",
+                f"Snapshot: {_snapshot_text(state.lastUpdatedAt)}",
+            ]
+        )
+        if state.errorMessage:
+            lines.append(f"Warning: {state.errorMessage}")
+    lines.extend(["", "Reset Bank"])
     bank = state.resetBank
     if bank is None:
         lines.extend(

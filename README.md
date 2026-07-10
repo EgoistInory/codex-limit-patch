@@ -123,6 +123,8 @@ It displays:
 
 If the app-server only returns `availableCount`, the UI only shows `Reset xN` and does not invent per-credit details.
 
+If the live `account/rateLimits/read` call fails, the tool read-only scans the newest rollout `rate_limits` snapshot under `~/.codex/sessions/` and `~/.codex/archived_sessions/`. Fallback output is marked `cached` and includes its source, snapshot time, and live error. It does not read `auth.json`. Local snapshots may be stale and are only a temporary reference.
+
 ### Level 2: local safe probe
 
 If app-server does not provide per-credit details, the tool performs a local read-only probe without reading `auth.json` or tokens.
