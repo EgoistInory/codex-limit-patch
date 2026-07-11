@@ -56,6 +56,8 @@ class ModelUsage:
     display_name: str
     input_tokens: Optional[int] = None
     output_tokens: Optional[int] = None
+    cache_read_tokens: Optional[int] = None
+    cache_creation_tokens: Optional[int] = None
     cost: Optional[Number] = None
     currency: Optional[str] = None
 
@@ -66,6 +68,8 @@ class ModelUsage:
             display_name=_required_str(data, "display_name"),
             input_tokens=_optional_int(data, "input_tokens"),
             output_tokens=_optional_int(data, "output_tokens"),
+            cache_read_tokens=_optional_int(data, "cache_read_tokens"),
+            cache_creation_tokens=_optional_int(data, "cache_creation_tokens"),
             cost=_optional_number(data, "cost"),
             currency=_optional_str(data, "currency"),
         )
@@ -76,6 +80,8 @@ class ModelUsage:
             "display_name": self.display_name,
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
+            "cache_read_tokens": self.cache_read_tokens,
+            "cache_creation_tokens": self.cache_creation_tokens,
             "cost": self.cost,
             "currency": self.currency,
         }

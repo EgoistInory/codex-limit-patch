@@ -62,6 +62,8 @@ class UsageMonitorModelTests(unittest.TestCase):
                     "display_name": "DeepSeek Chat",
                     "input_tokens": 1200,
                     "output_tokens": 300,
+                    "cache_read_tokens": 25,
+                    "cache_creation_tokens": 10,
                     "cost": 0.15,
                     "currency": "CNY",
                 }
@@ -72,6 +74,8 @@ class UsageMonitorModelTests(unittest.TestCase):
 
         self.assertEqual(snapshots[0].requests_today, 42)
         self.assertEqual(snapshots[0].models[0].model_id, "deepseek-chat")
+        self.assertEqual(snapshots[0].models[0].cache_read_tokens, 25)
+        self.assertEqual(snapshots[0].to_dict()["models"][0]["cache_creation_tokens"], 10)
         self.assertEqual(snapshots[0].to_dict()["quotas"][0]["remaining"], 88.5)
 
     def test_snapshot_serialization_preserves_plan_name(self) -> None:
