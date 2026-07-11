@@ -13,6 +13,7 @@
 - Do not modify the existing Codex CLI, parser, display, client, or Tk overlay in this milestone.
 - Do not read credentials, browser cookies, or live provider configuration.
 - Keep unavailable and estimated data explicit; never invent percentages or merge currencies.
+- Keep account identity siloed per provider and preserve source strategy labels.
 - Add no third-party runtime dependency.
 - Keep the dashboard usable at 360px and desktop widths.
 - Store all milestone artifacts under `demos/milestone-1/`.
@@ -252,6 +253,10 @@ Use these states to exercise the UI without claiming live support:
 - DeepSeek API: exact CNY balance plus token and request totals.
 - Zhipu GLM Coding Plan: estimated local token package with an explicit `accuracy: estimated` field.
 - Xiaomi MiMo API: unavailable official usage source with no invented numeric fields.
+
+These semantics follow the CodexBar provider documentation: DeepSeek is a
+balance-only API source, z.ai/GLM has provider-defined quota windows, and MiMo
+local accounting must not be presented as official platform quota.
 
 The README must state that every value is synthetic, list the launch path, and identify this as Milestone 1 rather than live provider support.
 
