@@ -354,6 +354,7 @@ h2 {
 
 .status-chip,
 .source-chip,
+.demo-chip,
 .accuracy-chip {
   display: inline-flex;
   align-items: center;
@@ -372,6 +373,10 @@ h2 {
 
 .status-chip[data-status="unavailable"] {
   color: var(--coral);
+}
+
+.demo-chip {
+  color: var(--amber);
 }
 
 .quota-stack {

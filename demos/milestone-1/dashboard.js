@@ -73,6 +73,7 @@
       const card = createElement("article", "provider-card");
       card.dataset.provider = account.provider_id;
       card.dataset.status = account.status;
+      card.dataset.demo = String(account.demo === true);
       card.dataset.attention = accountAlerts.length ? "true" : "false";
       card.style.animationDelay = `${index * 38}ms`;
       card.append(renderIdentity(account));
@@ -89,8 +90,12 @@
     head.append(createElement("span", "provider-glyph", initials(glyph)));
     const names = createElement("div", "");
     names.append(createElement("h3", "provider-name", account.provider_name));
+    const identityParts = [
+      account.client_name || humanize(account.account_kind),
+      account.plan_name,
+    ].filter(Boolean);
     names.append(
-      createElement("p", "client-name", account.client_name || humanize(account.account_kind)),
+      createElement("p", "client-name", identityParts.join(" · ")),
     );
     head.append(names);
     identity.append(head);
@@ -99,6 +104,10 @@
     const status = createElement("span", "status-chip", humanize(account.status));
     status.dataset.status = account.status;
     meta.append(status);
+    const isDemo = account.demo === true || (account.demo === undefined && payload.demo);
+    if (isDemo) {
+      meta.append(createElement("span", "demo-chip", "Demo"));
+    }
     meta.append(createElement("span", "source-chip", account.source_label));
     identity.append(meta);
     return identity;
