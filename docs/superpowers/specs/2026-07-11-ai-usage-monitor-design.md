@@ -62,6 +62,13 @@ Each adapter is read-only and returns a complete snapshot or a typed unavailable
 result. Adapters do not know about UI layout. The UI does not parse provider
 responses.
 
+Each provider will eventually own a descriptor and an ordered set of fetch
+strategies. A descriptor defines stable identity, labels, capabilities, and
+freshness policy. Strategies represent concrete sources such as a local CLI,
+OAuth usage endpoint, API key balance endpoint, browser session, or local log
+estimate. A refresh records attempted strategies and sanitized failures, then
+uses the best successful result or the last trustworthy cached snapshot.
+
 ## Normalized Contract
 
 An account snapshot contains:
@@ -77,6 +84,8 @@ An account snapshot contains:
 
 Every metric records whether it is exact, estimated, or unavailable. Secrets,
 raw authentication responses, and full account identifiers are excluded.
+Account identity and plan metadata remain isolated inside their provider and
+are never used as fallback labels for another provider.
 
 ## Alerts
 
@@ -87,6 +96,8 @@ The first alert engine is deterministic and local:
 - Warning when an API balance is below a configurable amount.
 - Stale when the source has not refreshed within its adapter's freshness window.
 - Unavailable when an adapter fails and has no previous good snapshot.
+- Future pace alerts may predict whether a quota will last until reset, but only
+  when a window exposes enough elapsed-time and reset data.
 
 Alerts are data objects, not UI strings, so future desktop notifications can use
 the same rules.
@@ -111,6 +122,24 @@ wrap the same UI in Electron or Tauri after packaging requirements are measured.
 - Never store credentials in fixtures, logs, SQLite, or exported snapshots.
 - Never read unrelated browser cookies or client credentials implicitly.
 - Show the source and collection method for every account.
+- Bound every subprocess, network request, and interactive probe with a timeout.
+
+## CodexBar Reference Decisions
+
+CodexBar is the primary reference for provider boundaries and compact menu-bar
+presentation: <https://github.com/steipete/CodexBar>. Its descriptor-driven
+provider pipeline, last-known-good degradation, merged status item, reset
+countdowns, and explicit source labels fit this product. This project does not
+copy CodexBar's provider settings surface or broad credential import behavior.
+
+Provider semantics remain source-specific:
+
+- DeepSeek exposes an API balance, not a session or weekly percentage.
+- Zhipu/z.ai can expose token, time, and MCP windows depending on account type.
+- Xiaomi MiMo can expose balance and token-plan data through an authenticated
+  console session; local wrapper logs are usage estimates, not platform quota.
+- Codex and Claude subscription windows remain separate from OpenAI and
+  Anthropic organization API billing.
 
 ## Demo Milestones
 
