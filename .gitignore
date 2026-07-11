@@ -21,3 +21,6 @@ logs/
 .vscode/
 *.swp
 .DS_Store
+
+# Local feature worktrees
+.worktrees/
