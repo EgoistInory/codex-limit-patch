@@ -93,6 +93,7 @@ class AccountSnapshot:
     fetched_at: str
     stale_after_seconds: int
     client_name: Optional[str] = None
+    plan_name: Optional[str] = None
     quotas: Tuple[QuotaWindow, ...] = ()
     models: Tuple[ModelUsage, ...] = ()
     requests_today: Optional[int] = None
@@ -127,6 +128,7 @@ class AccountSnapshot:
             fetched_at=fetched_at,
             stale_after_seconds=stale_after,
             client_name=_optional_str(data, "client_name"),
+            plan_name=_optional_str(data, "plan_name"),
             quotas=tuple(QuotaWindow.from_dict(item) for item in quotas),
             models=tuple(ModelUsage.from_dict(item) for item in models),
             requests_today=_optional_int(data, "requests_today"),
@@ -148,6 +150,7 @@ class AccountSnapshot:
             "fetched_at": self.fetched_at,
             "stale_after_seconds": self.stale_after_seconds,
             "client_name": self.client_name,
+            "plan_name": self.plan_name,
             "quotas": [quota.to_dict() for quota in self.quotas],
             "models": [model.to_dict() for model in self.models],
             "requests_today": self.requests_today,

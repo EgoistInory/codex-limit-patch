@@ -74,6 +74,28 @@ class UsageMonitorModelTests(unittest.TestCase):
         self.assertEqual(snapshots[0].models[0].model_id, "deepseek-chat")
         self.assertEqual(snapshots[0].to_dict()["quotas"][0]["remaining"], 88.5)
 
+    def test_snapshot_serialization_preserves_plan_name(self) -> None:
+        raw = {
+            "id": "openai-codex",
+            "provider_id": "openai",
+            "provider_name": "OpenAI",
+            "client_name": "Codex",
+            "account_kind": "subscription",
+            "status": "available",
+            "source_type": "local_client",
+            "source_label": "Codex app-server",
+            "fetched_at": "2026-07-11T04:00:00Z",
+            "stale_after_seconds": 300,
+            "plan_name": "plus",
+            "quotas": [],
+            "models": [],
+        }
+
+        snapshot = AccountSnapshot.from_dict(raw)
+
+        self.assertEqual(snapshot.plan_name, "plus")
+        self.assertEqual(snapshot.to_dict()["plan_name"], "plus")
+
 
 if __name__ == "__main__":
     unittest.main()
