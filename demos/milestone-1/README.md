@@ -12,5 +12,14 @@ The different shapes are intentional:
 - GLM uses an explicitly estimated local token package.
 - Xiaomi MiMo remains unavailable when no trustworthy source is configured.
 
-The visual dashboard will be available at `index.html` when this milestone is
-complete. It can be opened directly without installing dependencies.
+Generate the deterministic browser payload:
+
+```bash
+python3 -m codex_limit_patch.usage_monitor.demo \
+  --input demos/milestone-1/snapshots.json \
+  --output demos/milestone-1/demo-data.js \
+  --now 2026-07-11T03:00:00Z
+```
+
+Then open `index.html` directly. The dashboard has no runtime dependencies and
+does not start a server or read local credentials.
