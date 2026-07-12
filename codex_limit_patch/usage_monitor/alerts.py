@@ -62,6 +62,16 @@ def evaluate_alerts(
                 message=snapshot.message or "No trustworthy usage snapshot is available.",
             )
         )
+    elif snapshot.status == "degraded":
+        alerts.append(
+            UsageAlert(
+                account_id=snapshot.id,
+                kind="availability",
+                severity="warning",
+                title="%s availability is degraded" % snapshot.provider_name,
+                message=snapshot.message or "The provider reports limited availability.",
+            )
+        )
 
     for quota in snapshot.quotas:
         severity = quota_severity(_as_float(quota.remaining_percent))

@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import unittest
 
-from codex_limit_patch.usage_monitor.models import AccountSnapshot, load_snapshots
+from codex_limit_patch.usage_monitor.models import (
+    AccountSnapshot,
+    QuotaWindow,
+    load_snapshots,
+)
 
 
 class UsageMonitorModelTests(unittest.TestCase):
@@ -99,6 +103,24 @@ class UsageMonitorModelTests(unittest.TestCase):
 
         self.assertEqual(snapshot.plan_name, "plus")
         self.assertEqual(snapshot.to_dict()["plan_name"], "plus")
+
+    def test_balance_components_round_trip(self) -> None:
+        raw = {
+            "id": "balance-cny",
+            "label": "API balance",
+            "unit": "CNY",
+            "remaining": 110,
+            "components": [
+                {"label": "Granted", "value": 10, "unit": "CNY"},
+                {"label": "Paid", "value": 100, "unit": "CNY"},
+            ],
+        }
+
+        quota = QuotaWindow.from_dict(raw)
+
+        self.assertEqual(quota.components[0].value, 10)
+        self.assertEqual(quota.components[1].label, "Paid")
+        self.assertEqual(quota.to_dict()["components"][1]["value"], 100)
 
 
 if __name__ == "__main__":

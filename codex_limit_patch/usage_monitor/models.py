@@ -8,6 +8,27 @@ Number = Union[int, float]
 
 
 @dataclass(frozen=True)
+class MetricComponent:
+    label: str
+    value: Number
+    unit: str
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "MetricComponent":
+        value = _optional_number(data, "value")
+        if value is None:
+            raise ValueError("value must be a number")
+        return cls(
+            label=_required_str(data, "label"),
+            value=value,
+            unit=_required_str(data, "unit"),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"label": self.label, "value": self.value, "unit": self.unit}
+
+
+@dataclass(frozen=True)
 class QuotaWindow:
     id: str
     label: str
@@ -19,6 +40,7 @@ class QuotaWindow:
     resets_at: Optional[str] = None
     period_label: Optional[str] = None
     accuracy: str = "exact"
+    components: Tuple[MetricComponent, ...] = ()
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "QuotaWindow":
@@ -33,6 +55,10 @@ class QuotaWindow:
             resets_at=_optional_str(data, "resets_at"),
             period_label=_optional_str(data, "period_label"),
             accuracy=_optional_str(data, "accuracy") or "exact",
+            components=tuple(
+                MetricComponent.from_dict(item)
+                for item in _object_list(data, "components")
+            ),
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -47,6 +73,7 @@ class QuotaWindow:
             "resets_at": self.resets_at,
             "period_label": self.period_label,
             "accuracy": self.accuracy,
+            "components": [component.to_dict() for component in self.components],
         }
 
 

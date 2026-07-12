@@ -116,6 +116,7 @@ class UsageMonitorLiveDemoTests(unittest.TestCase):
 
         self.assertIn("account.plan_name", script)
         self.assertIn("account.demo", script)
+        self.assertIn("quota.components", script)
 
     def test_milestone_two_preserves_example_and_live_entrypoints(self) -> None:
         example = (MILESTONE_TWO_DIR / "index.html").read_text(encoding="utf-8")

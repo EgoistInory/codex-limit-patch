@@ -91,6 +91,13 @@ class UsageMonitorAlertTests(unittest.TestCase):
         self.assertEqual(alerts[0].kind, "unavailable")
         self.assertEqual(alerts[0].severity, "critical")
 
+    def test_degraded_source_emits_availability_warning(self) -> None:
+        alerts = evaluate_alerts(make_snapshot(status="degraded"), now=NOW)
+
+        availability = [alert for alert in alerts if alert.kind == "availability"]
+        self.assertEqual(len(availability), 1)
+        self.assertEqual(availability[0].severity, "warning")
+
 
 if __name__ == "__main__":
     unittest.main()

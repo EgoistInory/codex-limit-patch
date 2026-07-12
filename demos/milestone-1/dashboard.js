@@ -156,6 +156,14 @@
       foot.append(createElement("span", "", quota.period_label || humanize(quota.accuracy)));
     }
     block.append(foot);
+    if (Array.isArray(quota.components) && quota.components.length) {
+      const components = createElement("div", "quota-components");
+      quota.components.forEach((component) => {
+        const value = `${component.label} ${numberFormatter.format(component.value)} ${component.unit}`;
+        components.append(createElement("span", "quota-component", value));
+      });
+      block.append(components);
+    }
     return block;
   }
 

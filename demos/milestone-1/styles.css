@@ -375,6 +375,10 @@ h2 {
   color: var(--coral);
 }
 
+.status-chip[data-status="degraded"] {
+  color: var(--amber);
+}
+
 .demo-chip {
   color: var(--amber);
 }
@@ -446,6 +450,16 @@ h2 {
 .accuracy-chip {
   min-height: 18px;
   color: var(--violet);
+}
+
+.quota-components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
 }
 
 .activity-panel {
