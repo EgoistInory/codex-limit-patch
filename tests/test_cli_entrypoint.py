@@ -27,6 +27,10 @@ class CliEntrypointTests(unittest.TestCase):
             data["project"]["scripts"]["codex_limit_patch_overlay"],
             "codex_limit_patch.overlay:main",
         )
+        self.assertEqual(
+            data["project"]["scripts"]["ai_usage_monitor_demo"],
+            "codex_limit_patch.usage_monitor.three_source_demo:main",
+        )
 
     def test_package_discovery_only_includes_runtime_package(self) -> None:
         data = load_pyproject()

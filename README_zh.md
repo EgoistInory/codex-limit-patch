@@ -68,6 +68,34 @@ codex_limit_patch_overlay --geometry "+1200+20" --no-track-codex
 
 overlay 支持拖动移动、双击立即刷新，按 `Esc` 或 `Ctrl-Q` 关闭。
 
+## 多供应商使用量监控
+
+原有 Codex 命令行与常驻贴片保持不变。项目新增了一套独立的数据面板，
+将不同客户端和供应商的只读使用量统一展示；它不负责供应商配置，也不提供模型切换。
+
+| 供应商 / 客户端 | 当前展示内容 | 数据来源 |
+| --- | --- | --- |
+| Codex | 套餐时间窗与 Reset Bank | 本地 Codex app-server |
+| Claude Code | 请求数与 Token 总量 | 本地 JSONL 中的白名单字段 |
+| DeepSeek | 人民币/美元余额、赠送与充值余额 | 官方余额 API |
+| GLM / 小米 MiMo | 预留 Demo 行 | 后续再实现适配器 |
+
+生成本机三源面板数据：
+
+```bash
+python3 -m codex_limit_patch.usage_monitor.three_source_demo
+# 安装项目后也可以使用
+ai_usage_monitor_demo
+```
+
+DeepSeek 为可选数据源。设置 `DEEPSEEK_API_KEY` 或 `DEEPSEEK_KEY` 后读取余额；
+未设置时会明确显示为不可用，不会把示例值冒充实时数据。密钥只在进程内存中使用，
+不会写入生成的 JavaScript 数据文件。
+
+生成后打开 `demos/milestone-4/index-live.html`。仓库内的
+`demos/milestone-4/index.html` 是不含凭据的示例页面，之前各里程碑 Demo
+也会继续保留。
+
 `pill` 模式是紧凑型的输出：
 
 ```text
