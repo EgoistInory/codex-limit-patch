@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>AI Usage Monitor - Milestone 3 Example</title>
+    <link rel="stylesheet" href="../milestone-1/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-meter" aria-hidden="true"><i></i><i></i></span>
+          <div><p class="eyebrow">Two-source console</p><h1>AI Usage Monitor</h1></div>
+        </div>
+        <div class="snapshot-meta"><span class="live-dot" aria-hidden="true"></span><span id="snapshot-time">Example snapshot</span></div>
+      </header>
+      <section class="summary-strip" id="summary" aria-label="Usage summary"></section>
+      <section class="attention-band" aria-labelledby="attention-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">Needs attention</p><h2 id="attention-title">Limit signals</h2></div>
+          <div class="filter-group" aria-label="Provider filter">
+            <button class="filter-button is-active" type="button" data-filter="all">All</button>
+            <button class="filter-button" type="button" data-filter="attention">Attention</button>
+          </div>
+        </div>
+        <div class="alert-list" id="alerts"></div>
+      </section>
+      <section class="provider-section" aria-labelledby="providers-title">
+        <div class="provider-list-heading">
+          <div><p class="eyebrow">Provider ledger</p><h2 id="providers-title">Accounts and limits</h2></div>
+          <p>Example data demonstrates separate Codex quota and Claude local usage contracts.</p>
+        </div>
+        <div class="provider-list" id="providers"></div>
+      </section>
+      <footer><span>Milestone 3 example</span><span>Synthetic data only</span><span>No credentials loaded</span></footer>
+    </main>
+    <script src="../milestone-1/demo-data.js"></script>
+    <script src="demo-data.example.js"></script>
+    <script src="../milestone-1/dashboard.js"></script>
+  </body>
+</html>

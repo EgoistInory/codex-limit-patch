@@ -68,6 +68,36 @@ codex_limit_patch_overlay --geometry "+1200+20" --no-track-codex
 
 Drag the overlay to move it, double-click to refresh immediately, and press `Esc` or `Ctrl-Q` to close it.
 
+## Multi-provider Usage Monitor
+
+The original Codex CLI and always-on-top overlay remain unchanged. A separate
+dashboard now normalizes read-only usage information from multiple clients and
+providers without adding provider configuration or model switching.
+
+| Provider / client | Current data | Source |
+| --- | --- | --- |
+| Codex | Subscription windows and Reset Bank | Local Codex app-server |
+| Claude Code | Requests and token totals | Allowlisted local JSONL fields |
+| DeepSeek | CNY/USD balance, granted and paid components | Official balance API |
+| GLM / Xiaomi MiMo | Reserved Demo rows | Adapter planned for later |
+
+Generate a local three-source dashboard payload:
+
+```bash
+python3 -m codex_limit_patch.usage_monitor.three_source_demo
+# or, after installation
+ai_usage_monitor_demo
+```
+
+DeepSeek is optional. Set `DEEPSEEK_API_KEY` or `DEEPSEEK_KEY` to load its
+balance. If neither is present, the dashboard keeps a visible unavailable row
+instead of showing synthetic data as live. The key stays in process memory and
+is never written to the generated JavaScript payload.
+
+Open `demos/milestone-4/index-live.html` after generation. The committed
+`demos/milestone-4/index.html` is a credential-free example. Earlier milestone
+demos remain available as implementation snapshots.
+
 The pill mode is compact:
 
 ```text

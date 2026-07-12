@@ -24,3 +24,8 @@ logs/
 
 # Local feature worktrees
 .worktrees/
+
+# Local live quota snapshots
+demos/milestone-2/demo-data.js
+demos/milestone-3/demo-data.js
+demos/milestone-4/demo-data.js
