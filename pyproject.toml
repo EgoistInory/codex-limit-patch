@@ -4,10 +4,14 @@ version = "0.1.0"
 description = "Cross-platform AI usage, quota, and balance monitor."
 requires-python = ">=3.8"
 
+[project.optional-dependencies]
+macos-menubar = ["rumps>=0.4,<1"]
+
 [project.scripts]
 codex_limit_patch = "codex_limit_patch.cli:main"
 codex_limit_patch_overlay = "codex_limit_patch.overlay:main"
 ai_usage_monitor_demo = "codex_limit_patch.usage_monitor.three_source_demo:main"
+ai_usage_monitor_menubar = "codex_limit_patch.usage_monitor.macos_menubar:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

@@ -14,7 +14,19 @@ switch, or proxy model providers. DeepSeek credentials are read from
 `DEEPSEEK_API_KEY` or `DEEPSEEK_KEY`, kept in memory, and never written to the
 generated payload. Without a key, the DeepSeek row remains visibly unavailable.
 
-Generate the ignored local payload:
+For daily use on macOS, install and start the menu-bar companion once:
+
+```bash
+pip install -e '.[macos-menubar]'
+ai_usage_monitor_menubar
+```
+
+It refreshes all sources every 60 seconds, displays compact provider values and
+alerts in the system menu bar, and keeps the ignored `demo-data.js` current.
+Use **Open Dashboard** only when the full detail view is needed. An already-open
+live dashboard reloads every 60 seconds.
+
+The one-shot snapshot command remains available for diagnostics:
 
 ```bash
 python3 -m codex_limit_patch.usage_monitor.three_source_demo
@@ -27,5 +39,4 @@ the command line:
 ai_usage_monitor_demo --deepseek-api-key-env MY_DEEPSEEK_KEY
 ```
 
-Then open `index-live.html`. The committed `index.html` is a credential-free
-example with synthetic values.
+The committed `index.html` is a credential-free example with synthetic values.

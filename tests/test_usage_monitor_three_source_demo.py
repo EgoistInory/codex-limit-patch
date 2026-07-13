@@ -109,6 +109,8 @@ class ThreeSourceDemoTests(unittest.TestCase):
 
         self.assertIn("demo-data.example.js", example)
         self.assertIn("demo-data.js", live)
+        self.assertIn('http-equiv="refresh"', live)
+        self.assertIn('content="60"', live)
         self.assertTrue((MILESTONE_FOUR / "README.md").exists())
 
 

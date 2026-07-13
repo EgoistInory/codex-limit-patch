@@ -98,6 +98,21 @@ Open `demos/milestone-4/index-live.html` after generation. The committed
 `demos/milestone-4/index.html` is a credential-free example. Earlier milestone
 demos remain available as implementation snapshots.
 
+### macOS Menu Bar
+
+For an always-available view without keeping a browser open, install the
+optional macOS companion:
+
+```bash
+pip install -e '.[macos-menubar]'
+ai_usage_monitor_menubar
+```
+
+The menu bar refreshes in the background every 60 seconds. It shows one compact
+row per live provider, alert state, update time, and exact source labels. Use
+**Refresh Now** for an immediate read or **Open Dashboard** for the full page.
+The process stores no credentials and does not expose a local network service.
+
 The pill mode is compact:
 
 ```text

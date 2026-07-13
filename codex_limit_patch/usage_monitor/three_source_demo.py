@@ -4,36 +4,15 @@ import argparse
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import List, Optional
 
+from .collector import build_three_source_payload, collect_three_source_payload
 from .live_demo import write_browser_payload
-from .multi_live_demo import build_multi_live_payload
-from .providers.base import ProviderFetchOutcome
-from .providers.claude import fetch_claude_outcome
-from .providers.codex import fetch_codex_outcome
-from .providers.deepseek import fetch_deepseek_outcome
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_FIXTURE = PROJECT_ROOT / "demos" / "milestone-1" / "snapshots.json"
 DEFAULT_OUTPUT = PROJECT_ROOT / "demos" / "milestone-4" / "demo-data.js"
-PROVIDER_ORDER = ("openai", "anthropic", "deepseek")
-
-
-def build_three_source_payload(
-    fixture_path: Path,
-    *,
-    outcomes: Sequence[ProviderFetchOutcome],
-    now: datetime,
-) -> Dict[str, Any]:
-    outcomes_by_id = {outcome.descriptor.id: outcome for outcome in outcomes}
-    if len(outcomes_by_id) != len(outcomes):
-        raise ValueError("provider outcomes must be unique")
-    missing = [provider_id for provider_id in PROVIDER_ORDER if provider_id not in outcomes_by_id]
-    if missing:
-        raise ValueError("missing provider outcomes: %s" % ", ".join(missing))
-    ordered = [outcomes_by_id[provider_id] for provider_id in PROVIDER_ORDER]
-    return build_multi_live_payload(fixture_path, outcomes=ordered, now=now)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -58,16 +37,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         deepseek_key = os.environ.get(args.deepseek_api_key_env)
         deepseek_environ = {}
 
-    outcomes = [
-        fetch_codex_outcome(codex_bin=args.codex_bin, now=now),
-        fetch_claude_outcome(config_dir=args.claude_config_dir, now=now),
-        fetch_deepseek_outcome(
-            api_key=deepseek_key,
-            environ=deepseek_environ,
-            now=now,
-        ),
-    ]
-    payload = build_three_source_payload(args.fixture, outcomes=outcomes, now=now)
+    payload = collect_three_source_payload(
+        args.fixture,
+        codex_bin=args.codex_bin,
+        claude_config_dir=args.claude_config_dir,
+        deepseek_api_key=deepseek_key,
+        deepseek_environ=deepseek_environ,
+        now=now,
+    )
     output = write_browser_payload(payload, args.output)
     try:
         shown_path = output.relative_to(Path.cwd())

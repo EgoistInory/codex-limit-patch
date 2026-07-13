@@ -31,6 +31,18 @@ class CliEntrypointTests(unittest.TestCase):
             data["project"]["scripts"]["ai_usage_monitor_demo"],
             "codex_limit_patch.usage_monitor.three_source_demo:main",
         )
+        self.assertEqual(
+            data["project"]["scripts"]["ai_usage_monitor_menubar"],
+            "codex_limit_patch.usage_monitor.macos_menubar:main",
+        )
+
+    def test_macos_menu_bar_dependency_is_optional(self) -> None:
+        data = load_pyproject()
+
+        self.assertEqual(
+            data["project"]["optional-dependencies"]["macos-menubar"],
+            ["rumps>=0.4,<1"],
+        )
 
     def test_package_discovery_only_includes_runtime_package(self) -> None:
         data = load_pyproject()
