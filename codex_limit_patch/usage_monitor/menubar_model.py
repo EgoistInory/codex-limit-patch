@@ -12,6 +12,7 @@ class MenuRow:
     detail: str
     status: str
     source_label: str
+    reset_detail: str
 
 
 @dataclass(frozen=True)
@@ -26,14 +27,29 @@ def build_menu_presentation(
     payload: Dict[str, Any],
     *,
     error_message: Optional[str] = None,
+    now: Optional[datetime] = None,
 ) -> MenuPresentation:
+    current = _utc_datetime(now or datetime.now(timezone.utc))
     accounts = payload.get("accounts") or []
     live_provider_ids = payload.get("live_provider_ids")
     if isinstance(live_provider_ids, list):
         live_ids = set(live_provider_ids)
         accounts = [account for account in accounts if account.get("provider_id") in live_ids]
 
-    alerts = payload.get("alerts") or []
+    unconfigured_provider_ids = _unconfigured_provider_ids(payload)
+    unconfigured_account_ids = {
+        account.get("id")
+        for account in accounts
+        if account.get("provider_id") in unconfigured_provider_ids
+    }
+    alerts = [
+        alert
+        for alert in (payload.get("alerts") or [])
+        if not (
+            alert.get("kind") == "unavailable"
+            and alert.get("account_id") in unconfigured_account_ids
+        )
+    ]
     if isinstance(live_provider_ids, list):
         live_account_ids = {account.get("id") for account in accounts}
         alerts = [
@@ -44,15 +60,25 @@ def build_menu_presentation(
     critical = sum(1 for alert in alerts if alert.get("severity") == "critical")
     warning = sum(1 for alert in alerts if alert.get("severity") == "warning")
     if error_message:
-        title = "AI ×"
+        title = "AI · Offline"
     elif critical:
-        title = "AI !%s" % critical
+        title = "AI · %s %s" % (critical, "alert" if critical == 1 else "alerts")
     elif warning:
-        title = "AI •%s" % warning
+        title = "AI · %s %s" % (
+            warning,
+            "warning" if warning == 1 else "warnings",
+        )
     else:
-        title = "AI ✓"
+        title = "AI · OK"
 
-    rows = tuple(_menu_row(account) for account in accounts)
+    rows = tuple(
+        _menu_row(
+            account,
+            now=current,
+            configured=account.get("provider_id") not in unconfigured_provider_ids,
+        )
+        for account in accounts
+    )
     return MenuPresentation(
         title=title,
         rows=rows,
@@ -61,9 +87,12 @@ def build_menu_presentation(
     )
 
 
-def _menu_row(account: Dict[str, Any]) -> MenuRow:
+def _menu_row(account: Dict[str, Any], *, now: datetime, configured: bool) -> MenuRow:
     status = str(account.get("status") or "unavailable")
-    if status == "unavailable":
+    if not configured:
+        status = "not_configured"
+        detail = "Not configured"
+    elif status == "unavailable":
         detail = "Unavailable"
     else:
         detail = _metric_detail(account)
@@ -73,7 +102,21 @@ def _menu_row(account: Dict[str, Any]) -> MenuRow:
         detail=detail,
         status=status,
         source_label=str(account.get("source_label") or "Unknown source"),
+        reset_detail=_reset_detail(account, now=now),
     )
+
+
+def _unconfigured_provider_ids(payload: Dict[str, Any]) -> set:
+    result = set()
+    attempts_by_provider = payload.get("fetch_attempts")
+    if not isinstance(attempts_by_provider, dict):
+        return result
+    for provider_id, attempts in attempts_by_provider.items():
+        if not isinstance(attempts, list) or not attempts:
+            continue
+        if all(attempt.get("available") is False for attempt in attempts):
+            result.add(provider_id)
+    return result
 
 
 def _metric_detail(account: Dict[str, Any]) -> str:
@@ -117,7 +160,56 @@ def _updated_label(value: Any) -> str:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=timezone.utc)
     utc = parsed.astimezone(timezone.utc)
-    return "Updated %s UTC" % utc.strftime("%Y-%m-%d %H:%M")
+    return "Data refreshed · %s UTC" % utc.strftime("%Y-%m-%d %H:%M")
+
+
+def _reset_detail(account: Dict[str, Any], *, now: datetime) -> str:
+    parts = []
+    for quota in account.get("quotas") or []:
+        resets_at = _parse_datetime(quota.get("resets_at"))
+        if resets_at is None:
+            continue
+        parts.append(
+            "%s %s"
+            % (quota.get("label") or "Quota", _countdown(resets_at, now=now))
+        )
+        if len(parts) == 2:
+            break
+    return " · ".join(parts) if parts else "Not reported"
+
+
+def _parse_datetime(value: Any) -> Optional[datetime]:
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _utc_datetime(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _countdown(resets_at: datetime, *, now: datetime) -> str:
+    seconds = max(0, int((resets_at - now).total_seconds()))
+    minutes = seconds // 60
+    if minutes <= 0:
+        return "due now"
+    if minutes < 60:
+        return "in %sm" % minutes
+    hours = minutes // 60
+    if hours < 24:
+        remainder = minutes % 60
+        return "in %sh%s" % (hours, " %sm" % remainder if remainder else "")
+    days = hours // 24
+    remainder = hours % 24
+    return "in %sd%s" % (days, " %sh" % remainder if remainder else "")
 
 
 def _compact_number(value: Any) -> str:

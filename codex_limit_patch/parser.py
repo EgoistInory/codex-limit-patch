@@ -193,8 +193,9 @@ def build_codex_limit_state(
     plan_name = _string_or_none(rate_limits.get("planType")) or _string_or_none(
         rate_limits.get("planName")
     )
-    five_hour = _normalize_window(rate_limits.get("primary"))
-    weekly = _normalize_window(rate_limits.get("secondary"))
+    primary = _normalize_window(rate_limits.get("primary"))
+    secondary = _normalize_window(rate_limits.get("secondary"))
+    five_hour, weekly = _normalize_rate_limit_windows(primary, secondary)
     limit_reached = rate_limits.get("rateLimitReachedType")
     available = not bool(limit_reached)
 
@@ -469,6 +470,43 @@ def _normalize_window(raw: Any) -> LimitWindow | None:
         windowDurationMins=raw.get("windowDurationMins"),
         resetsAt=normalize_timestamp(raw.get("resetsAt")),
     )
+
+
+def _normalize_rate_limit_windows(
+    primary: LimitWindow | None,
+    secondary: LimitWindow | None,
+) -> tuple[LimitWindow | None, LimitWindow | None]:
+    five_hour = next(
+        (
+            window
+            for window in (primary, secondary)
+            if window and window.windowDurationMins == 300
+        ),
+        None,
+    )
+    weekly = next(
+        (
+            window
+            for window in (primary, secondary)
+            if window and window.windowDurationMins == 10080
+        ),
+        None,
+    )
+
+    classified = {id(window) for window in (five_hour, weekly) if window is not None}
+    for source, window in (("primary", primary), ("secondary", secondary)):
+        if window is None or id(window) in classified:
+            continue
+        if source == "primary" and five_hour is None:
+            five_hour = window
+        elif source == "secondary" and weekly is None:
+            weekly = window
+        elif five_hour is None:
+            five_hour = window
+        elif weekly is None:
+            weekly = window
+
+    return five_hour, weekly
 
 
 def _first_value(raw: dict[str, Any], names: tuple[str, ...]) -> Any:

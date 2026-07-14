@@ -204,6 +204,52 @@ class ResetBankParserTests(unittest.TestCase):
         self.assertEqual(state.fiveHour.usedPercent, 78)
         self.assertEqual(state.weekly.usedPercent, 64)
 
+    def test_lone_primary_weekly_window_maps_to_weekly(self) -> None:
+        state = build_codex_limit_state(
+            {
+                "result": {
+                    "rateLimits": {
+                        "primary": {
+                            "usedPercent": 4,
+                            "windowDurationMins": 10080,
+                            "resetsAt": 1784598479,
+                        },
+                        "secondary": None,
+                    }
+                }
+            },
+            snapshot_at=NOW,
+            now=NOW,
+        )
+
+        self.assertIsNone(state.fiveHour)
+        self.assertIsNotNone(state.weekly)
+        self.assertEqual(state.weekly.usedPercent, 4)
+        self.assertEqual(state.weekly.windowDurationMins, 10080)
+
+    def test_reversed_windows_are_normalized_by_duration(self) -> None:
+        state = build_codex_limit_state(
+            {
+                "result": {
+                    "rateLimits": {
+                        "primary": {
+                            "usedPercent": 20,
+                            "windowDurationMins": 10080,
+                        },
+                        "secondary": {
+                            "usedPercent": 10,
+                            "windowDurationMins": 300,
+                        },
+                    }
+                }
+            },
+            snapshot_at=NOW,
+            now=NOW,
+        )
+
+        self.assertEqual(state.fiveHour.usedPercent, 10)
+        self.assertEqual(state.weekly.usedPercent, 20)
+
     def test_display_uses_remaining_percent_and_reset_times(self) -> None:
         state = build_codex_limit_state(
             {

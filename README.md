@@ -109,9 +109,11 @@ ai_usage_monitor_menubar
 ```
 
 The menu bar refreshes in the background every 60 seconds. It shows one compact
-row per live provider, alert state, update time, and exact source labels. Use
-**Refresh Now** for an immediate read or **Open Dashboard** for the full page.
-The process stores no credentials and does not expose a local network service.
+row per live provider, per-window reset countdowns, alert state, data refresh
+time, and exact source labels. An optional provider without credentials is
+shown as **Not configured** and does not raise a global alert. Use **Refresh
+Now** for an immediate read or **Open Dashboard** for the full page. The process
+stores no credentials and does not expose a local network service.
 
 The pill mode is compact:
 

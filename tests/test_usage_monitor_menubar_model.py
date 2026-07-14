@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime, timezone
 
 from codex_limit_patch.usage_monitor.menubar_model import build_menu_presentation
+
+
+NOW = datetime(2026, 7, 13, 2, 0, 0, tzinfo=timezone.utc)
 
 
 def account(provider_id, name, *, status="available", quotas=None, tokens=None, message=None):
@@ -28,7 +32,13 @@ class MenuBarModelTests(unittest.TestCase):
                     "OpenAI",
                     quotas=[
                         {"label": "5-hour", "remaining_percent": 78, "remaining": None, "unit": "percent"},
-                        {"label": "Weekly", "remaining_percent": 64, "remaining": None, "unit": "percent"},
+                        {
+                            "label": "Weekly",
+                            "remaining_percent": 64,
+                            "remaining": None,
+                            "unit": "percent",
+                            "resets_at": "2026-07-19T05:00:00Z",
+                        },
                     ],
                 ),
                 account("anthropic", "Anthropic", tokens=1250000),
@@ -43,14 +53,18 @@ class MenuBarModelTests(unittest.TestCase):
             "alerts": [],
         }
 
-        presentation = build_menu_presentation(payload)
+        presentation = build_menu_presentation(payload, now=NOW)
 
-        self.assertEqual(presentation.title, "AI ✓")
+        self.assertEqual(presentation.title, "AI · OK")
         self.assertEqual([row.provider_id for row in presentation.rows], ["openai", "anthropic", "deepseek"])
         self.assertEqual(presentation.rows[0].detail, "5-hour 78% · Weekly 64%")
         self.assertEqual(presentation.rows[1].detail, "1.2M tokens today")
         self.assertEqual(presentation.rows[2].detail, "42.6 CNY")
-        self.assertEqual(presentation.updated_label, "Updated 2026-07-13 02:00 UTC")
+        self.assertEqual(presentation.rows[0].reset_detail, "Weekly in 6d 3h")
+        self.assertEqual(
+            presentation.updated_label,
+            "Data refreshed · 2026-07-13 02:00 UTC",
+        )
 
     def test_critical_alerts_and_unavailable_provider_are_explicit(self) -> None:
         payload = {
@@ -68,7 +82,7 @@ class MenuBarModelTests(unittest.TestCase):
 
         presentation = build_menu_presentation(payload)
 
-        self.assertEqual(presentation.title, "AI !1")
+        self.assertEqual(presentation.title, "AI · 1 alert")
         self.assertEqual(presentation.rows[0].detail, "Unavailable")
         self.assertEqual(presentation.rows[0].status, "unavailable")
         self.assertEqual(presentation.rows[0].source_label, "DeepSeek source")
@@ -82,7 +96,7 @@ class MenuBarModelTests(unittest.TestCase):
 
         presentation = build_menu_presentation(payload, error_message="Refresh failed")
 
-        self.assertEqual(presentation.title, "AI ×")
+        self.assertEqual(presentation.title, "AI · Offline")
         self.assertEqual(presentation.error_message, "Refresh failed")
         self.assertEqual(len(presentation.rows), 1)
 
@@ -125,7 +139,40 @@ class MenuBarModelTests(unittest.TestCase):
 
         presentation = build_menu_presentation(payload)
 
-        self.assertEqual(presentation.title, "AI ✓")
+        self.assertEqual(presentation.title, "AI · OK")
+
+    def test_unconfigured_optional_provider_does_not_raise_global_alert(self) -> None:
+        payload = {
+            "generated_at": "2026-07-13T02:00:00Z",
+            "live_provider_ids": ["openai", "deepseek"],
+            "accounts": [
+                account("openai", "OpenAI"),
+                account("deepseek", "DeepSeek", status="unavailable"),
+            ],
+            "alerts": [
+                {
+                    "account_id": "deepseek-main",
+                    "kind": "unavailable",
+                    "severity": "critical",
+                }
+            ],
+            "fetch_attempts": {
+                "deepseek": [
+                    {
+                        "strategy_id": "balance-api",
+                        "available": False,
+                        "success": False,
+                    }
+                ]
+            },
+        }
+
+        presentation = build_menu_presentation(payload, now=NOW)
+
+        self.assertEqual(presentation.title, "AI · OK")
+        deepseek = next(row for row in presentation.rows if row.provider_id == "deepseek")
+        self.assertEqual(deepseek.status, "not_configured")
+        self.assertEqual(deepseek.detail, "Not configured")
 
 
 if __name__ == "__main__":

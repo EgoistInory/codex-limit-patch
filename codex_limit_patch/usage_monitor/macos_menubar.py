@@ -64,13 +64,17 @@ class UsageMenuBarApp:
         self.app = self.rumps.App("AI Usage Monitor", title="AI …", quit_button=None)
         self.provider_items = {}
         self.source_items = {}
+        self.reset_items = {}
         menu: List[Any] = []
         for provider_id, label in PROVIDERS:
             item = self.rumps.MenuItem("○ %s · Loading…" % label)
             source = self.rumps.MenuItem("Source · Waiting for refresh")
+            reset = self.rumps.MenuItem("Resets · Waiting for refresh")
             item.add(source)
+            item.add(reset)
             self.provider_items[provider_id] = item
             self.source_items[provider_id] = source
+            self.reset_items[provider_id] = reset
             menu.append(item)
         self.updated_item = self.rumps.MenuItem("Update pending")
         self.status_item = self.rumps.MenuItem("Status · Starting")
@@ -137,7 +141,7 @@ class UsageMenuBarApp:
         if self.last_payload is not None:
             self._apply(build_menu_presentation(self.last_payload, error_message=value))
         else:
-            self.app.title = "AI ×"
+            self.app.title = "AI · Offline"
             self.status_item.title = "Error · %s" % value
 
     def _apply(self, presentation: MenuPresentation) -> None:
@@ -149,6 +153,7 @@ class UsageMenuBarApp:
             if row is None:
                 self.provider_items[provider_id].title = "○ %s · No data" % label
                 self.source_items[provider_id].title = "Source · Unknown"
+                self.reset_items[provider_id].title = "Resets · Not reported"
                 continue
             symbol = symbols.get(row.status, "○")
             self.provider_items[provider_id].title = "%s %s · %s" % (
@@ -157,6 +162,7 @@ class UsageMenuBarApp:
                 row.detail,
             )
             self.source_items[provider_id].title = "Source · %s" % row.source_label
+            self.reset_items[provider_id].title = "Resets · %s" % row.reset_detail
         self.updated_item.title = presentation.updated_label
         if presentation.error_message:
             self.status_item.title = "Error · %s" % presentation.error_message

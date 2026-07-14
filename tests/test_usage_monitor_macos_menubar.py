@@ -90,6 +90,7 @@ def payload():
                         "remaining_percent": 78,
                         "remaining": None,
                         "unit": "percent",
+                        "resets_at": "2026-07-13T04:30:00Z",
                     }
                 ],
             },
@@ -111,7 +112,22 @@ def payload():
                 "quotas": [],
             },
         ],
-        "alerts": [{"severity": "critical"}],
+        "alerts": [
+            {
+                "account_id": "deepseek-live",
+                "kind": "unavailable",
+                "severity": "critical",
+            }
+        ],
+        "fetch_attempts": {
+            "deepseek": [
+                {
+                    "strategy_id": "balance-api",
+                    "available": False,
+                    "success": False,
+                }
+            ]
+        },
     }
 
 
@@ -150,10 +166,15 @@ class MacOSMenuBarTests(unittest.TestCase):
             app.poll_results()
 
             self.assertEqual(len(calls), 1)
-            self.assertEqual(app.app.title, "AI !1")
+            self.assertEqual(app.app.title, "AI · OK")
             self.assertIn("OpenAI · 5-hour 78%", app.provider_items["openai"].title)
             self.assertIn("Source · Codex app-server", app.source_items["openai"].title)
-            self.assertEqual(app.updated_item.title, "Updated 2026-07-13 02:00 UTC")
+            self.assertIn("Resets · 5-hour", app.reset_items["openai"].title)
+            self.assertIn("DeepSeek · Not configured", app.provider_items["deepseek"].title)
+            self.assertEqual(
+                app.updated_item.title,
+                "Data refreshed · 2026-07-13 02:00 UTC",
+            )
             self.assertTrue(output.exists())
             text = output.read_text(encoding="utf-8")
             decoded = json.loads(text[len("window.USAGE_MONITOR_DEMO = ") : -2])
