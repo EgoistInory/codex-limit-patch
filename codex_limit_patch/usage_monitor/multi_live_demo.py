@@ -62,8 +62,19 @@ def build_multi_live_payload(
         accounts.append(account)
 
     alerts: List[UsageAlert] = []
+    unconfigured_account_ids = {
+        outcome.snapshot.id
+        for outcome in outcomes
+        if outcome.attempts
+        and all(attempt.available is False for attempt in outcome.attempts)
+    }
     for snapshot in snapshots:
-        alerts.extend(evaluate_alerts(snapshot, now=now))
+        snapshot_alerts = evaluate_alerts(snapshot, now=now)
+        if snapshot.id in unconfigured_account_ids:
+            snapshot_alerts = [
+                alert for alert in snapshot_alerts if alert.kind != "unavailable"
+            ]
+        alerts.extend(snapshot_alerts)
     severity_order = {"critical": 0, "warning": 1, "info": 2}
     alerts.sort(
         key=lambda alert: (

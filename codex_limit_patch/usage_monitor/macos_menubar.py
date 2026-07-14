@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from .collector import collect_three_source_payload
+from .collector import collect_supported_payload
 from .live_demo import write_browser_payload
 from .menubar_model import MenuPresentation, build_menu_presentation
 
@@ -24,7 +24,11 @@ DEFAULT_DASHBOARD = PROJECT_ROOT / "demos" / "milestone-4" / "index-live.html"
 PROVIDERS = (
     ("openai", "OpenAI"),
     ("anthropic", "Anthropic"),
+    ("google", "Google Gemini"),
     ("deepseek", "DeepSeek"),
+    ("kimi", "Kimi"),
+    ("zhipu", "Zhipu GLM"),
+    ("minimax", "MiniMax"),
 )
 
 
@@ -33,7 +37,11 @@ class MenuBarOptions:
     refresh_sec: int = 60
     codex_bin: Optional[str] = None
     claude_config_dir: Optional[Path] = None
+    gemini_config_dir: Optional[Path] = None
     deepseek_api_key_env: Optional[str] = None
+    kimi_api_key_env: Optional[str] = None
+    zhipu_api_key_env: Optional[str] = None
+    minimax_api_key_env: Optional[str] = None
     fixture_path: Path = DEFAULT_FIXTURE
     output_path: Path = DEFAULT_OUTPUT
     dashboard_path: Path = DEFAULT_DASHBOARD
@@ -48,7 +56,7 @@ class UsageMenuBarApp:
         options: MenuBarOptions,
         *,
         rumps_module: Any,
-        collector: Callable[..., Dict[str, Any]] = collect_three_source_payload,
+        collector: Callable[..., Dict[str, Any]] = collect_supported_payload,
         thread_factory: Callable[..., Any] = threading.Thread,
         browser_opener: Callable[[str], Any] = webbrowser.open,
     ) -> None:
@@ -111,17 +119,32 @@ class UsageMenuBarApp:
 
     def _refresh_worker(self) -> None:
         try:
-            deepseek_key = None
-            deepseek_environ = os.environ
-            if self.options.deepseek_api_key_env:
-                deepseek_key = os.environ.get(self.options.deepseek_api_key_env)
-                deepseek_environ = {}
+            def explicit_key(env_name: Optional[str]):
+                if not env_name:
+                    return None, None
+                return os.environ.get(env_name), {}
+
+            deepseek_key, deepseek_environ = explicit_key(
+                self.options.deepseek_api_key_env
+            )
+            kimi_key, kimi_environ = explicit_key(self.options.kimi_api_key_env)
+            zhipu_key, zhipu_environ = explicit_key(self.options.zhipu_api_key_env)
+            minimax_key, minimax_environ = explicit_key(
+                self.options.minimax_api_key_env
+            )
             payload = self.collector(
                 fixture_path=self.options.fixture_path,
                 codex_bin=self.options.codex_bin,
                 claude_config_dir=self.options.claude_config_dir,
+                gemini_config_dir=self.options.gemini_config_dir,
                 deepseek_api_key=deepseek_key,
                 deepseek_environ=deepseek_environ,
+                kimi_api_key=kimi_key,
+                kimi_environ=kimi_environ,
+                zhipu_api_key=zhipu_key,
+                zhipu_environ=zhipu_environ,
+                minimax_api_key=minimax_key,
+                minimax_environ=minimax_environ,
             )
             write_browser_payload(payload, self.options.output_path)
             self.results.put(("ok", payload))
@@ -210,7 +233,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         refresh_sec=args.refresh_sec,
         codex_bin=args.codex_bin,
         claude_config_dir=args.claude_config_dir,
+        gemini_config_dir=args.gemini_config_dir,
         deepseek_api_key_env=args.deepseek_api_key_env,
+        kimi_api_key_env=args.kimi_api_key_env,
+        zhipu_api_key_env=args.zhipu_api_key_env,
+        minimax_api_key_env=args.minimax_api_key_env,
         fixture_path=args.fixture,
         output_path=args.output,
         dashboard_path=args.dashboard,
@@ -226,7 +253,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--refresh-sec", type=int, default=60)
     parser.add_argument("--codex-bin")
     parser.add_argument("--claude-config-dir", type=Path)
+    parser.add_argument("--gemini-config-dir", type=Path)
     parser.add_argument("--deepseek-api-key-env")
+    parser.add_argument("--kimi-api-key-env")
+    parser.add_argument("--zhipu-api-key-env")
+    parser.add_argument("--minimax-api-key-env")
     parser.add_argument("--fixture", type=Path, default=DEFAULT_FIXTURE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--dashboard", type=Path, default=DEFAULT_DASHBOARD)

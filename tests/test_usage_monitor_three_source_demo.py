@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from codex_limit_patch.usage_monitor.models import AccountSnapshot
+from codex_limit_patch.usage_monitor.collector import build_supported_payload
 from codex_limit_patch.usage_monitor.providers.base import (
     FetchAttempt,
     ProviderDescriptor,
@@ -25,6 +26,10 @@ def successful_outcome(provider_id: str) -> ProviderFetchOutcome:
         "openai": ("OpenAI", "Codex", "local_client"),
         "anthropic": ("Anthropic", "Claude Code", "local_logs"),
         "deepseek": ("DeepSeek", None, "official_api"),
+        "google": ("Google Gemini", "Gemini CLI", "local_logs"),
+        "kimi": ("Kimi", "Kimi Code", "official_api"),
+        "zhipu": ("Zhipu GLM", "GLM Coding Plan", "official_api"),
+        "minimax": ("MiniMax", "MiniMax Token Plan", "official_api"),
     }
     provider_name, client_name, source_type = names[provider_id]
     descriptor = ProviderDescriptor(
@@ -82,6 +87,52 @@ class ThreeSourceDemoTests(unittest.TestCase):
         self.assertFalse(by_provider["deepseek"]["demo"])
         self.assertTrue(by_provider["zhipu"]["demo"])
         self.assertTrue(by_provider["xiaomi"]["demo"])
+
+    def test_supported_payload_replaces_reserved_zhipu_and_adds_new_rows(self) -> None:
+        provider_ids = [
+            "openai",
+            "anthropic",
+            "google",
+            "deepseek",
+            "kimi",
+            "zhipu",
+            "minimax",
+        ]
+
+        payload = build_supported_payload(
+            FIXTURE,
+            outcomes=[successful_outcome(provider_id) for provider_id in provider_ids],
+            now=NOW,
+        )
+
+        self.assertEqual(payload["live_provider_ids"], provider_ids)
+        by_provider = {item["provider_id"]: item for item in payload["accounts"]}
+        self.assertFalse(by_provider["zhipu"]["demo"])
+        self.assertTrue(by_provider["xiaomi"]["demo"])
+        self.assertFalse(by_provider["google"]["demo"])
+        self.assertFalse(by_provider["kimi"]["demo"])
+        self.assertFalse(by_provider["minimax"]["demo"])
+        live_accounts = [
+            item["provider_id"] for item in payload["accounts"] if not item["demo"]
+        ]
+        self.assertEqual(live_accounts, provider_ids)
+
+    def test_unconfigured_provider_is_not_a_global_alert(self) -> None:
+        unavailable = fetch_deepseek_outcome(environ={}, now=NOW)
+
+        payload = build_three_source_payload(
+            FIXTURE,
+            outcomes=[
+                successful_outcome("openai"),
+                successful_outcome("anthropic"),
+                unavailable,
+            ],
+            now=NOW,
+        )
+
+        self.assertFalse(
+            any(alert["account_id"] == unavailable.snapshot.id for alert in payload["alerts"])
+        )
 
     def test_missing_deepseek_key_is_explicit_live_unavailable_row(self) -> None:
         unavailable = fetch_deepseek_outcome(environ={}, now=NOW)

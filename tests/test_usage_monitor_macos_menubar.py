@@ -171,6 +171,10 @@ class MacOSMenuBarTests(unittest.TestCase):
             self.assertIn("Source · Codex app-server", app.source_items["openai"].title)
             self.assertIn("Resets · 5-hour", app.reset_items["openai"].title)
             self.assertIn("DeepSeek · Not configured", app.provider_items["deepseek"].title)
+            self.assertIn("google", app.provider_items)
+            self.assertIn("kimi", app.provider_items)
+            self.assertIn("zhipu", app.provider_items)
+            self.assertIn("minimax", app.provider_items)
             self.assertEqual(
                 app.updated_item.title,
                 "Data refreshed · 2026-07-13 02:00 UTC",

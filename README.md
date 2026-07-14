@@ -78,10 +78,14 @@ providers without adding provider configuration or model switching.
 | --- | --- | --- |
 | Codex | Subscription windows and Reset Bank | Local Codex app-server |
 | Claude Code | Requests and token totals | Allowlisted local JSONL fields |
+| Gemini CLI | Today's requests and token totals by model | Allowlisted local JSONL fields |
 | DeepSeek | CNY/USD balance, granted and paid components | Official balance API |
-| GLM / Xiaomi MiMo | Reserved Demo rows | Adapter planned for later |
+| Kimi Code | Rolling and weekly request limits | Official usage API |
+| Zhipu GLM Coding Plan | Token and MCP/time quotas | Official quota API |
+| MiniMax Coding Plan | Rolling and weekly token limits | Official Token Plan API |
+| Xiaomi MiMo | Reserved Demo row | Adapter planned for later |
 
-Generate a local three-source dashboard payload:
+Generate a local dashboard payload:
 
 ```bash
 python3 -m codex_limit_patch.usage_monitor.three_source_demo
@@ -89,10 +93,22 @@ python3 -m codex_limit_patch.usage_monitor.three_source_demo
 ai_usage_monitor_demo
 ```
 
-DeepSeek is optional. Set `DEEPSEEK_API_KEY` or `DEEPSEEK_KEY` to load its
-balance. If neither is present, the dashboard keeps a visible unavailable row
-instead of showing synthetic data as live. The key stays in process memory and
-is never written to the generated JavaScript payload.
+Gemini reads only allowlisted usage fields from local Gemini CLI sessions under
+`~/.gemini/tmp`; it does not reuse Gemini OAuth credentials or claim to expose
+subscription limits. API-backed providers are optional and use these variables:
+
+| Provider | Environment variables, in precedence order |
+| --- | --- |
+| DeepSeek | `DEEPSEEK_API_KEY`, `DEEPSEEK_KEY` |
+| Kimi Code | `KIMI_CODE_API_KEY`, `KIMI_API_KEY` |
+| Zhipu GLM | `ZHIPU_API_KEY`, `Z_AI_API_KEY` |
+| MiniMax | `MINIMAX_CODING_API_KEY`, `MINIMAX_API_KEY` |
+
+Without a key, the provider remains visibly **Not configured** rather than
+showing synthetic data as live. Keys stay in process memory and are never
+written to the generated JavaScript payload. Alternate environment variable
+names can be selected with `--deepseek-api-key-env`, `--kimi-api-key-env`,
+`--zhipu-api-key-env`, and `--minimax-api-key-env`.
 
 Open `demos/milestone-4/index-live.html` after generation. The committed
 `demos/milestone-4/index.html` is a credential-free example. Earlier milestone
